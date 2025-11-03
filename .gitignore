@@ -1,0 +1,44 @@
+# =====================================
+# Visual Studio / .NET / MAUI .gitignore
+# =====================================
+
+# Build results
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+
+# Visual Studio user files
+.vs/
+*.user
+*.userosscache
+*.suo
+*.rsuser
+
+# MAUI / Android / iOS artifacts
+Client/ClientApp/android/
+Client/ClientApp/Platforms/Android/bin/
+Client/ClientApp/Platforms/Android/obj/
+Client/ClientApp/Platforms/iOS/bin/
+Client/ClientApp/Platforms/iOS/obj/
+Client/ClientApp/Platforms/MacCatalyst/bin/
+Client/ClientApp/Platforms/MacCatalyst/obj/
+
+# Local settings
+appsettings.json
+appsettings.*.json
+
+# Packages & build output
+*.nupkg
+*.snupkg
+*.dll
+*.exe
+publish/
+dist/
+out/
+
+# OS and editor junk
+Thumbs.db
+ehthumbs.db
+*.log
+*.DS_Store
