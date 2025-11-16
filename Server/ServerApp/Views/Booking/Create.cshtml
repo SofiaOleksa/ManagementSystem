@@ -1,0 +1,41 @@
+﻿@model ServerApp.Models.Booking
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Create booking";
+}
+
+<h1>Create booking</h1>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="ClientName"></label>
+        <input asp-for="ClientName" class="form-control" />
+        <span asp-validation-for="ClientName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="CoachId">Coach</label>
+        <select asp-for="CoachId" asp-items="ViewBag.CoachId" class="form-control"></select>
+        <span asp-validation-for="CoachId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TrainingClassId">Class</label>
+        <select asp-for="TrainingClassId" asp-items="ViewBag.TrainingClassId" class="form-control"></select>
+        <span asp-validation-for="TrainingClassId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Status"></label>
+        <input asp-for="Status" class="form-control" />
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

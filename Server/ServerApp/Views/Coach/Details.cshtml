@@ -1,0 +1,26 @@
+﻿@model ServerApp.Models.Coach
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Coach details";
+}
+
+<h1>Coach details</h1>
+
+<div class="mb-4">
+    <dl class="row">
+        <dt class="col-sm-3">Name</dt>
+        <dd class="col-sm-9">@Model.Name</dd>
+
+        <dt class="col-sm-3">Email</dt>
+        <dd class="col-sm-9">@Model.Email</dd>
+
+        <dt class="col-sm-3">PasswordHash</dt>
+        <dd class="col-sm-9">@Model.PasswordHash</dd>
+    </dl>
+</div>
+
+<p>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to list</a>
+</p>

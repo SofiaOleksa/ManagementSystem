@@ -1,0 +1,40 @@
+﻿@model IEnumerable<ServerApp.Models.Booking>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Bookings";
+}
+
+<h1>Bookings</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create new booking</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Client</th>
+            <th>Coach</th>
+            <th>Class</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var b in Model)
+        {
+            <tr>
+                <td>@b.ClientName</td>
+                <td>@b.Coach?.Name</td>
+                <td>@b.Class?.Name</td>
+                <td>@b.Status</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@b.Id">Details</a> |
+                    <a asp-action="Edit" asp-route-id="@b.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@b.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

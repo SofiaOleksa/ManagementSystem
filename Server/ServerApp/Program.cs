@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ServerApp.Models;
@@ -35,8 +35,10 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// ---------- CONTROLLERS & SWAGGER ----------
-builder.Services.AddControllers();
+// ---------- MVC (Views + API) ----------
+builder.Services.AddControllersWithViews();   // ← було AddControllers()
+
+// ---------- SWAGGER ----------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -53,7 +55,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "����� ����� � ������: Bearer {�����}"
+        Description = "Введи токен у форматі: Bearer {токен}"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -83,11 +85,21 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();      // ← щоб працював Bootstrap, CSS, картинки
 
-// ������� ��������!
+app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+// ---------- ROUTING ----------
+
+// Маршрути для MVC-контролерів з Views (Coach, TrainingClass, Booking)
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Coach}/{action=Index}/{id?}");
+
+// Маршрути для Web API-контролерів з [Route("api/...")]
 app.MapControllers();
 
 app.Run();

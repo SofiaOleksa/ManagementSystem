@@ -1,0 +1,29 @@
+﻿@model ServerApp.Models.Booking
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Booking details";
+}
+
+<h1>Booking details</h1>
+
+<div class="mb-4">
+    <dl class="row">
+        <dt class="col-sm-3">Client</dt>
+        <dd class="col-sm-9">@Model.ClientName</dd>
+
+        <dt class="col-sm-3">Coach</dt>
+        <dd class="col-sm-9">@Model.Coach?.Name</dd>
+
+        <dt class="col-sm-3">Training class</dt>
+        <dd class="col-sm-9">@Model.Class?.Name</dd>
+
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">@Model.Status</dd>
+    </dl>
+</div>
+
+<p>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to list</a>
+</p>
