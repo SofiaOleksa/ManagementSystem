@@ -19,6 +19,8 @@ namespace ServerApp.Controllers
             _context = context;
         }
 
+        // ---------- MVC ЧАСТИНА (адмін-панель) ----------
+
         // GET: Booking
         public async Task<IActionResult> Index()
         {
@@ -135,5 +137,48 @@ namespace ServerApp.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
+        // ---------- REST API ЧАСТИНА (завдання: POST /api/bookings) ----------
+
+        // POST: /api/bookings
+        [HttpPost("/api/bookings")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<object>> CreateBookingApi([FromBody] Booking booking)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var coachExists = await _context.Coaches.AnyAsync(c => c.Id == booking.CoachId);
+            if (!coachExists)
+                ModelState.AddModelError(nameof(booking.CoachId), "Вказаний тренер не існує.");
+
+            var classExists = await _context.Classes.AnyAsync(c => c.Id == booking.ClassId);
+            if (!classExists)
+                ModelState.AddModelError(nameof(booking.ClassId), "Вказаний клас не існує.");
+
+            if (string.IsNullOrWhiteSpace(booking.ClientName))
+                ModelState.AddModelError(nameof(booking.ClientName), "Ім'я клієнта є обов'язковим.");
+
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            _context.Bookings.Add(booking);
+            await _context.SaveChangesAsync();
+
+            var result = new
+            {
+                booking.Id,
+                booking.CoachId,
+                booking.ClassId,
+                booking.ClientName,
+                booking.Status
+            };
+
+            return Created("/api/bookings/" + booking.Id, result);
+        }
+
+
+
+
     }
 }

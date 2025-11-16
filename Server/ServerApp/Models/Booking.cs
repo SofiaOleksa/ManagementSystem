@@ -1,15 +1,28 @@
-﻿namespace ServerApp.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-public class Booking
+namespace ServerApp.Models
 {
-    public int Id { get; set; }
+    public class Booking
+    {
+        public int Id { get; set; }
 
-    public int CoachId { get; set; }
-    public Coach Coach { get; set; } = null!;
+        [Required]
+        public int CoachId { get; set; }
 
-    public int ClassId { get; set; }
-    public TrainingClass Class { get; set; } = null!;
+        [Required]
+        public int ClassId { get; set; }
 
-    public string ClientName { get; set; } = null!;
-    public bool Status { get; set; }
+        [Required]
+        public string ClientName { get; set; } = null!;
+
+        public bool Status { get; set; }
+
+        // Навігаційні властивості: НЕ валідовувати, можуть бути null
+        [ValidateNever]
+        public Coach? Coach { get; set; }
+
+        [ValidateNever]
+        public TrainingClass? Class { get; set; }
+    }
 }

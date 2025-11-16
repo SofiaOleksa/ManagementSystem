@@ -1,4 +1,5 @@
 ﻿// Controllers/TrainingClassController.cs
+using System.Collections.Generic;                  // ⬅️ додай це
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,8 @@ namespace ServerApp.Controllers
         {
             _context = context;
         }
+
+        // ---------- MVC ЧАСТИНА (адмін-панель) ----------
 
         // GET: TrainingClass
         public async Task<IActionResult> Index()
@@ -128,5 +131,27 @@ namespace ServerApp.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
+        // ---------- REST API ЧАСТИНА (завдання 6) ----------
+
+        // GET: /api/classes
+        [HttpGet("/api/classes")]
+        public async Task<ActionResult<IEnumerable<object>>> GetClassesApi()
+        {
+            var classes = await _context.Classes
+                .Include(c => c.Coach)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Name,
+                    c.TimeSlot,
+                    CoachId = c.CoachId,
+                    CoachName = c.Coach.Name
+                })
+                .ToListAsync();
+
+            return Ok(classes);
+        }
+
     }
 }
