@@ -38,6 +38,7 @@ builder.Services.AddAuthorization();
 // ---------- MVC (Views + API) ----------
 builder.Services.AddControllersWithViews();   // ← було AddControllers()
 
+
 // ---------- SWAGGER ----------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -91,6 +92,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapControllers();
 
 // ---------- ROUTING ----------
 
