@@ -1,0 +1,30 @@
+<ContentPage
+    x:Class="ClientApp.Views.LoginPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:ClientApp.ViewModels"
+    Title="Login">
+
+	<ContentPage.BindingContext>
+		<vm:LoginViewModel />
+	</ContentPage.BindingContext>
+
+	<VerticalStackLayout Padding="24" Spacing="16">
+
+		<Label Text="Вхід до системи"
+               FontSize="24"
+               HorizontalOptions="Center" />
+
+		<Entry Placeholder="Email"
+               Keyboard="Email"
+               Text="{Binding Email}" />
+
+		<Entry Placeholder="Пароль"
+               IsPassword="True"
+               Text="{Binding Password}" />
+
+		<Button Text="Увійти"
+                Command="{Binding LoginCommand}" />
+
+	</VerticalStackLayout>
+</ContentPage>

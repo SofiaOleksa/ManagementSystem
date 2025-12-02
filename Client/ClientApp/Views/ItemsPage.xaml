@@ -1,0 +1,51 @@
+<ContentPage
+    x:Class="ClientApp.Views.ItemsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:ClientApp.ViewModels"
+    Title="Classes">
+
+	<ContentPage.BindingContext>
+		<vm:ItemsViewModel />
+	</ContentPage.BindingContext>
+
+	<CollectionView ItemsSource="{Binding Items}"
+                    Margin="12">
+
+		<CollectionView.ItemTemplate>
+			<DataTemplate>
+				<Border StrokeThickness="1"
+                        Stroke="Gray"
+                        Padding="12"
+                        Margin="0,0,0,12"
+                        StrokeShape="RoundRectangle 8">
+
+					<VerticalStackLayout Spacing="6">
+
+						<!-- Назва класу -->
+						<Label Text="{Binding Name}"
+                               FontAttributes="Bold"
+                               FontSize="18" />
+
+						<!-- Час проведення -->
+						<Label Text="{Binding TimeSlot}"
+                               FontSize="14"
+                               TextColor="Gray" />
+
+						<!-- Тренер -->
+						<HorizontalStackLayout Spacing="4">
+							<Label Text="Coach:"
+                                   FontSize="14"
+                                   TextColor="Gray" />
+							<Label Text="{Binding CoachId}"
+                                   FontSize="14" />
+						</HorizontalStackLayout>
+
+					</VerticalStackLayout>
+
+				</Border>
+			</DataTemplate>
+		</CollectionView.ItemTemplate>
+
+	</CollectionView>
+</ContentPage>

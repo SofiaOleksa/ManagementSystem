@@ -1,0 +1,41 @@
+<ContentPage
+    x:Class="ClientApp.Views.ActionPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:ClientApp.ViewModels"
+    Title="Create Action">
+
+	<ContentPage.BindingContext>
+		<vm:ActionViewModel />
+	</ContentPage.BindingContext>
+
+	<ScrollView>
+		<VerticalStackLayout Padding="24" Spacing="12">
+
+			<Label Text="Створення бронювання"
+                   FontSize="22"
+                   HorizontalOptions="Center" />
+
+			<Entry Placeholder="Coach Id"
+                   Keyboard="Numeric"
+                   Text="{Binding CoachId}" />
+
+			<Entry Placeholder="Class Id"
+                   Keyboard="Numeric"
+                   Text="{Binding ClassId}" />
+
+			<Entry Placeholder="Client name"
+                   Text="{Binding ClientName}" />
+
+			<HorizontalStackLayout Spacing="8">
+				<Label Text="Підтверджено:"
+                       VerticalOptions="Center" />
+				<Switch IsToggled="{Binding Status}" />
+			</HorizontalStackLayout>
+
+			<Button Text="Створити"
+                    Command="{Binding CreateActionCommand}" />
+
+		</VerticalStackLayout>
+	</ScrollView>
+</ContentPage>
