@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Storage;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 
@@ -13,7 +15,7 @@ public partial class LoginViewModel : ObservableObject
     [ObservableProperty]
     private string password;
 
-    // ⚠️ Підстав свій URL до ServerApp
+    // ⚠️ Постав свій реальний URL (порт з ServerApp)
     private const string BaseUrl = "https://localhost:7123";
 
     [RelayCommand]
@@ -26,35 +28,53 @@ public partial class LoginViewModel : ObservableObject
             return;
         }
 
-        var client = new HttpClient();
-
-        var payload = new
+        try
         {
-            email = Email,
-            password = Password
-        };
+            using var client = new HttpClient();
 
-        var content = new StringContent(
-            JsonSerializer.Serialize(payload),
-            Encoding.UTF8,
-            "application/json");
+            var payload = new
+            {
+                email = Email,
+                password = Password
+            };
 
-        var response = await client.PostAsync($"{BaseUrl}/api/auth/login", content);
+            var content = new StringContent(
+                JsonSerializer.Serialize(payload),
+                Encoding.UTF8,
+                "application/json");
 
-        if (!response.IsSuccessStatusCode)
-        {
-            await Application.Current.MainPage.DisplayAlert(
-                "Помилка", "Невірний email або пароль", "OK");
-            return;
+            var response = await client.PostAsync($"{BaseUrl}/api/auth/login", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "Помилка", "Невірний email або пароль", "OK");
+                return;
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+
+            var token = doc.RootElement.GetProperty("token").GetString();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "Помилка", "Сервер не повернув токен", "OK");
+                return;
+            }
+
+            // зберігаємо токен
+            Preferences.Default.Set("jwt_token", token);
+
+            // перехід на сторінку списку
+            await Shell.Current.GoToAsync("//ItemsPage");
         }
-
-        var json = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(json);
-        var token = doc.RootElement.GetProperty("token").GetString();
-
-        Preferences.Set("jwt_token", token);
-
-        // Перехід на сторінку зі списком Items (Classes)
-        await Shell.Current.GoToAsync("//ItemsPage");
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+            await Application.Current.MainPage.DisplayAlert(
+                "Помилка", "Сталася помилка під час логіну.", "OK");
+        }
     }
 }
