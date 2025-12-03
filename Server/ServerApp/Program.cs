@@ -1,107 +1,105 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ServerApp.Models;
+using ASP_proj.Models;
 using System.Text;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---------- DATABASE ----------
+// Swagger (äëÿ REST API äîêóìåíòàö³¿)
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// EF Core – ï³äêëþ÷åííÿ äî SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ---------- JWT AUTH ----------
+// Àäì³íñüê³ êðåäåíøëè (äëÿ MVC-ëîã³íó)
+builder.Services.AddSingleton(new AdminCredentials());
+
+// MVC (êîíòðîëåðè + â'þøêè)
+builder.Services.AddControllersWithViews();
+
+// ===== JWT-àóòåíòèô³êàö³ÿ =====
+var jwtKey = builder.Configuration["Jwt:Key"]!;
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
+var jwtAudience = builder.Configuration["Jwt:Audience"]!;
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options =>
     {
-        var cfg = builder.Configuration.GetSection("Jwt");
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
             ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
+        };
 
-            ValidIssuer = cfg["Issuer"],
-            ValidAudience = cfg["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(cfg["Key"]!)
-            ),
-            ClockSkew = TimeSpan.Zero
+        // Òåïåð ï³äòðèìóºìî ÄÂÀ âàð³àíòè:
+        // 1) Authorization: Bearer <token>  (äëÿ Postman / MAUI)
+        // 2) cookie AuthToken                 (äëÿ MVC-àäì³íêè)
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // ßêùî º çàãîëîâîê Authorization – âèêîðèñòîâóºìî éîãî
+                var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(authHeader))
+                {
+                    // JwtBearer ñàì âèòÿãíå òîêåí ³ç "Bearer xxx"
+                    return Task.CompletedTask;
+                }
+
+                // ²íàêøå ïðîáóºìî âçÿòè òîêåí ³ç cookie AuthToken
+                var cookieToken = context.Request.Cookies["AuthToken"];
+                if (!string.IsNullOrEmpty(cookieToken))
+                {
+                    context.Token = cookieToken;
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 
 builder.Services.AddAuthorization();
 
-// ---------- MVC (Views + API) ----------
-builder.Services.AddControllersWithViews();   // ← було AddControllers()
-
-
-// ---------- SWAGGER ----------
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "ManagementSystem API",
-        Version = "v1"
-    });
-
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Введи токен у форматі: Bearer {токен}"
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new List<string>()
-        }
-    });
-});
-
-
 var app = builder.Build();
 
-// ---------- PIPELINE ----------
+// Îáðîáêà ïîìèëîê + Swagger
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+}
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();      // ← щоб працював Bootstrap, CSS, картинки
-
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Àòðèáóòèâí³ ìàðøðóòè äëÿ API-êîíòðîëåð³â (ItemsController, ActionsController, ApiAuthController)
 app.MapControllers();
 
-// ---------- ROUTING ----------
-
-// Маршрути для MVC-контролерів з Views (Coach, TrainingClass, Booking)
+// Ìàðøðóò äëÿ MVC (àäì³í-ïàíåëü, ëîã³í ³ CRUD)
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Coach}/{action=Index}/{id?}");
-
-// Маршрути для Web API-контролерів з [Route("api/...")]
-app.MapControllers();
+    pattern: "{controller=Auth}/{action=Login}/{id?}");
 
 app.Run();

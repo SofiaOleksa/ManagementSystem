@@ -1,11 +1,10 @@
-﻿using ASP_proj.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServerApp.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace ASP_proj.Controllers
+namespace ServerApp.Controllers
 {
     [Authorize]
     [ApiController]
@@ -38,15 +37,14 @@ namespace ASP_proj.Controllers
 
         // POST: /api/bookings
         [HttpPost]
-        public async Task<ActionResult<Bookings>> CreateBooking([FromBody] CreateBookingRequest request)
+        public async Task<ActionResult<Booking>> CreateBooking([FromBody] CreateBookingRequest request)
         {
-            // 1) Перевірка атрибутів [Required]
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // 2) Перевіряємо, що Coach існує
+            // Перевіряємо, що Coach існує
             var coachExists = await _context.Coaches
                 .AnyAsync(c => c.CoachId == request.CoachId);
 
@@ -55,7 +53,7 @@ namespace ASP_proj.Controllers
                 return BadRequest("Coach with given CoachId does not exist.");
             }
 
-            // 3) Перевіряємо, що Class існує
+            // Перевіряємо, що Class існує
             var classExists = await _context.Classes
                 .AnyAsync(c => c.ClassId == request.ClassId);
 
@@ -64,8 +62,8 @@ namespace ASP_proj.Controllers
                 return BadRequest("Class with given ClassId does not exist.");
             }
 
-            // 4) Створюємо Booking
-            var booking = new Bookings
+            // Створюємо Booking
+            var booking = new Booking
             {
                 CoachId = request.CoachId,
                 ClassId = request.ClassId,
@@ -76,18 +74,21 @@ namespace ASP_proj.Controllers
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
 
-            // 5) Повертаємо 201 Created + об'єкт
             return CreatedAtAction(
                 nameof(GetBookingById),
                 new { id = booking.BookingId },
                 booking);
         }
 
-        // GET: /api/bookings/{id} – допоміжний метод для CreatedAtAction
+        // GET: /api/bookings/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<Bookings>> GetBookingById(int id)
+        public async Task<ActionResult<Booking>> GetBookingById(int id)
         {
-            var booking = await _context.Bookings.FindAsync(id);
+            var booking = await _context.Bookings
+                .Include(b => b.Coach)
+                .Include(b => b.Class)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
+
             if (booking == null) return NotFound();
 
             return Ok(booking);

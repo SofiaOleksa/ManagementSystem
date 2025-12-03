@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using ASP_proj.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,35 +6,27 @@ using ServerApp.Models;
 
 namespace ServerApp.Controllers
 {
+    [Authorize]
     [ApiController]
-    [Route("api/items")]
-    [Authorize(Roles = "Admin")]   // захист ендпоінта
-    public class ItemsController : ControllerBase
+    [Route("api/classes")]
+    public class ClassesApiController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public ItemsController(AppDbContext context)
+        public ClassesApiController(AppDbContext context)
         {
             _context = context;
         }
 
-        // GET: /api/items
+        // GET: /api/classes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<object>>> GetItems()
+        public async Task<ActionResult<IEnumerable<Class>>> GetClasses()
         {
-            var items = await _context.Classes
-                .Include(c => c.Coach)
-                .Select(c => new
-                {
-                    c.Id,
-                    c.Name,
-                    c.TimeSlot,
-                    c.CoachId,
-                    CoachName = c.Coach.Name
-                })
+            var classes = await _context.Classes
+                .Include(c => c.Coach)   // якщо хочеш одразу бачити тренера
                 .ToListAsync();
 
-            return Ok(items);
+            return Ok(classes);
         }
     }
 }

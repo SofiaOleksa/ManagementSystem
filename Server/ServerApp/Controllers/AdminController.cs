@@ -3,15 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ServerApp.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    [Authorize] // <-- тільки авторизовані користувачі з токеном мають доступ
-    public class AdminController : ControllerBase
+    [Authorize]
+    public class AdminController : Controller
     {
-        [HttpGet("dashboard")]
-        public IActionResult Dashboard()
+        public IActionResult Index()
         {
-            return Ok("✅ Вітаю! Ви зайшли в адмін-панель.");
+            return View();
         }
     }
 }

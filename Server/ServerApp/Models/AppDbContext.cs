@@ -1,61 +1,105 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
+using ServerApp.Models;
 
-namespace ServerApp.Models
+namespace ASP_proj.Models
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options)
+        {
+        }
 
         public DbSet<Coach> Coaches { get; set; }
-        public DbSet<TrainingClass> Classes { get; set; }
+        public DbSet<Class> Classes { get; set; }
         public DbSet<Booking> Bookings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // ----------------- ВІДНОШЕННЯ -----------------
+            // Ключі
+            modelBuilder.Entity<Coach>().HasKey(c => c.CoachId);
+            modelBuilder.Entity<Class>().HasKey(c => c.ClassId);
+            modelBuilder.Entity<Booking>().HasKey(b => b.BookingId);
 
-            // Class -> Coach (без каскадного видалення, щоб не було Multiple Cascade Paths)
-            modelBuilder.Entity<TrainingClass>()
+            // Зв'язок Coach (1) – (many) Class
+            modelBuilder.Entity<Class>()
                 .HasOne(c => c.Coach)
                 .WithMany(co => co.Classes)
                 .HasForeignKey(c => c.CoachId)
-                .OnDelete(DeleteBehavior.Restrict);   // або .NoAction
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // Booking -> Class (можна каскад)
-            modelBuilder.Entity<Booking>()
-                .HasOne(b => b.Class)
-                .WithMany(c => c.Bookings)
-                .HasForeignKey(b => b.ClassId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Booking -> Coach (без каскаду)
+            // Зв'язок Coach (1) – (many) Booking
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.Coach)
                 .WithMany(co => co.Bookings)
                 .HasForeignKey(b => b.CoachId)
-                .OnDelete(DeleteBehavior.Restrict);   // або .NoAction
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // ----------------- СИДІНГ ДАНИХ -----------------
+            // Зв'язок Class (1) – (many) Booking
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Class)
+                .WithMany(cl => cl.Bookings)
+                .HasForeignKey(b => b.ClassId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            var t1 = new DateTime(2025, 11, 3, 10, 0, 0, DateTimeKind.Utc);
-            var t2 = new DateTime(2025, 11, 3, 12, 0, 0, DateTimeKind.Utc);
+            // ---- Seed-дані ----
 
+            // Тренери
             modelBuilder.Entity<Coach>().HasData(
-                new Coach { Id = 1, Name = "Alice Trainer", Email = "alice@example.com", PasswordHash = "pw1" },
-                new Coach { Id = 2, Name = "Bob Coach", Email = "bob@example.com", PasswordHash = "pw2" }
+                new Coach
+                {
+                    CoachId = 1,
+                    Name = "Ivan Trainer",
+                    Email = "ivan.trainer@example.com",
+                    PasswordHash = "pass1"
+                },
+                new Coach
+                {
+                    CoachId = 2,
+                    Name = "Olena Fit",
+                    Email = "olena.fit@example.com",
+                    PasswordHash = "pass2"
+                }
             );
 
-            modelBuilder.Entity<TrainingClass>().HasData(
-                new TrainingClass { Id = 1, Name = "Yoga", TimeSlot = t1, CoachId = 1 },
-                new TrainingClass { Id = 2, Name = "Boxing", TimeSlot = t2, CoachId = 2 }
+            // Заняття
+            modelBuilder.Entity<Class>().HasData(
+                new Class
+                {
+                    ClassId = 1,
+                    Name = "Morning Cardio",
+                    CoachId = 1,
+                    TimeSlot = "Mon 08:00–09:00"
+                },
+                new Class
+                {
+                    ClassId = 2,
+                    Name = "Evening Strength",
+                    CoachId = 2,
+                    TimeSlot = "Wed 18:00–19:30"
+                }
             );
 
+            // Бронювання
             modelBuilder.Entity<Booking>().HasData(
-                new Booking { Id = 1, CoachId = 1, ClassId = 1, ClientName = "Оксана", Status = true },
-                new Booking { Id = 2, CoachId = 2, ClassId = 2, ClientName = "Назар", Status = false }
+                new Booking
+                {
+                    BookingId = 1,
+                    CoachId = 1,
+                    ClassId = 1,
+                    ClientName = "Petro Client",
+                    Status = "OnTime"
+                },
+                new Booking
+                {
+                    BookingId = 2,
+                    CoachId = 2,
+                    ClassId = 2,
+                    ClientName = "Anna Client",
+                    Status = "Delayed"
+                }
             );
         }
     }

@@ -5,7 +5,7 @@ namespace ServerApp.Models
 {
     public class Booking
     {
-        public int Id { get; set; }
+        public int BookingId { get; set; }
 
         [Required]
         public int CoachId { get; set; }
@@ -16,13 +16,14 @@ namespace ServerApp.Models
         [Required]
         public string ClientName { get; set; } = null!;
 
-        public bool Status { get; set; }
+        // "Pending", "Confirmed", "Cancelled"
+        [Required]
+        public string Status { get; set; } = "Pending";
 
-        // Навігаційні властивості: НЕ валідовувати, можуть бути null
         [ValidateNever]
         public Coach? Coach { get; set; }
 
         [ValidateNever]
-        public TrainingClass? Class { get; set; }
+        public Class? Class { get; set; }
     }
 }
